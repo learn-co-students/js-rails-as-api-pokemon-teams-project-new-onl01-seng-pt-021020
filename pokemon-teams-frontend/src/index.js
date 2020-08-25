@@ -1,6 +1,7 @@
 const BASE_URL = "http://localhost:3000"
 const TRAINERS_URL = `${BASE_URL}/trainers`
 const POKEMONS_URL = `${BASE_URL}/pokemons`
+const main = document.getElementById("main-content")
 
 document.addEventListener("DOMContentLoaded", () => {
     getTrainersData();
@@ -10,96 +11,78 @@ document.addEventListener("DOMContentLoaded", () => {
 function getTrainersData() {
     fetch(TRAINERS_URL).then(response => {
         return response.json()
-    }).then(trainerObj => {
-        renderTrainers(trainerObj["data"]);
-        renderPokemon(trainerObj["included"]);
+    }).then(jsonObj => {
+        jsonObj.forEach(trainer => renderTrainer(trainer))
     })
 }
 
-function renderTrainers(trainerObj) {
-    trainerObj.forEach(element => {
-        createPokemonCard(element);
-    });
-}
-
-function renderPokemon(trainerObj) {
-    trainerObj.forEach(element => {
-        insertPokemon(element);
-    });
-}
-
-function createPokemonCard(element) {
-    const main = document.getElementById("main-content")
+function renderTrainer(trainerObj) {
     let newDiv = document.createElement("div")
     let newP = document.createElement("p")
     let addBtn = document.createElement("button")
     let newUl = document.createElement("ul")
-    let trainerName = element.attributes.name
-    addBtn.innerText = "Add Pokemon"
-    addBtn.addEventListener("click", () => { addPokemon(element) })
     newDiv.className = "card"
-    newDiv.setAttribute("data-id", element.id)
-    newP.innerText = trainerName
+    newDiv.setAttribute("data-id", trainerObj.id)
+    newP.innerText = trainerObj.name
+    addBtn.innerText = "Add Pokemon"
+    addBtn.setAttribute("data-trainer-id", trainerObj.id)
+    addBtn.addEventListener("click", addPokemon)
 
-    main.appendChild(newDiv)
+
     newDiv.appendChild(newP)
     newDiv.appendChild(addBtn)
     newDiv.appendChild(newUl)
+    main.appendChild(newDiv)
+
+    trainerObj.pokemons.forEach(pokemon => renderPokemon(pokemon))
 }
 
-function insertPokemon(element) {
-    let trainerId = element.attributes.trainer_id.toString()
+function renderPokemon(pokemon) {
+    let trainerId = pokemon.trainer_id
     const div = document.querySelector(`div[data-id='${trainerId}']`)
     const ul = div.getElementsByTagName("ul")[0]
     let li = document.createElement("li")
     let btn = document.createElement("button")
     btn.className = "release"
     btn.innerText = "Release"
-    btn.addEventListener("click", () => { removePokemon(element) })
-    btn.setAttribute("data-pokemon-id", element.id)
-    li.innerText = `${element.attributes.nickname} (${element.attributes.species})`
+    btn.setAttribute("data-pokemon-id", pokemon.id)
+    btn.addEventListener("click", removePokemon)
+    li.innerText = `${pokemon.nickname} (${pokemon.species})`
     li.appendChild(btn)
     ul.appendChild(li)
 }
 
+
+
 function addPokemon(e) {
+    e.preventDefault();
+
     fetch(POKEMONS_URL, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
             "Accept": "application/json"
         },
-        body: JSON.stringify(e.id)
+        body: JSON.stringify({ trainer_id: e.target.dataset.trainerId })
     }).then(resp => {
         return resp.json()
     }).then(obj => {
-        let trainerId = obj.trainer_id.toString()
-        const div = document.querySelector(`div[data-id='${trainerId}']`)
-        const ul = div.getElementsByTagName("ul")[0]
-        let li = document.createElement("li")
-        let btn = document.createElement("button")
-        btn.className = "release"
-        btn.innerText = "Release"
-        btn.addEventListener("click", () => { removePokemon(obj) })
-        btn.setAttribute("data-pokemon-id", obj.id)
-        li.innerText = `${obj.nickname} (${obj.species})`
-        li.appendChild(btn)
-        ul.appendChild(li)
+        if (obj.message) {
+            alert(obj.message)
+        } else {
+            renderPokemon(obj)
+        }
     })
 }
 
 function removePokemon(e) {
-    fetch(POKEMONS_URL + `/${e.id}`, {
+    e.preventDefault();
+    e.target.parentElement.remove()
+    fetch(`http://localhost:3000/pokemons/${ e.target.dataset.pokemonId }`, {
         method: "DELETE",
         headers: {
             "Content-Type": "application/json",
             "Accept": "application/json"
-        },
-        body: JSON.stringify(e)
-    }).then(resp => {
-        return resp.json()
-    }).then(obj => {
-        debugger
-        console.log(obj)
+        }
     })
 }
