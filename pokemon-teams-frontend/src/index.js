@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 function getTrainersData() {
-    fetch(BASE_URL + "/trainers").then(response => {
+    fetch(TRAINERS_URL).then(response => {
         return response.json()
     }).then(trainerObj => {
         renderTrainers(trainerObj["data"]);
@@ -24,7 +24,7 @@ function renderTrainers(trainerObj) {
 
 function renderPokemon(trainerObj) {
     trainerObj.forEach(element => {
-        addPokemon(element);
+        insertPokemon(element);
     });
 }
 
@@ -36,6 +36,7 @@ function createPokemonCard(element) {
     let newUl = document.createElement("ul")
     let trainerName = element.attributes.name
     addBtn.innerText = "Add Pokemon"
+    addBtn.addEventListener("click", () => { addPokemon(element) })
     newDiv.className = "card"
     newDiv.setAttribute("data-id", element.id)
     newP.innerText = trainerName
@@ -46,7 +47,59 @@ function createPokemonCard(element) {
     newDiv.appendChild(newUl)
 }
 
-function addPokemon(element) {
+function insertPokemon(element) {
     let trainerId = element.attributes.trainer_id.toString()
-    debugger
+    const div = document.querySelector(`div[data-id='${trainerId}']`)
+    const ul = div.getElementsByTagName("ul")[0]
+    let li = document.createElement("li")
+    let btn = document.createElement("button")
+    btn.className = "release"
+    btn.innerText = "Release"
+    btn.addEventListener("click", () => { removePokemon(element) })
+    btn.setAttribute("data-pokemon-id", element.id)
+    li.innerText = `${element.attributes.nickname} (${element.attributes.species})`
+    li.appendChild(btn)
+    ul.appendChild(li)
+}
+
+function addPokemon(e) {
+    fetch(POKEMONS_URL, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        },
+        body: JSON.stringify(e.id)
+    }).then(resp => {
+        return resp.json()
+    }).then(obj => {
+        let trainerId = obj.trainer_id.toString()
+        const div = document.querySelector(`div[data-id='${trainerId}']`)
+        const ul = div.getElementsByTagName("ul")[0]
+        let li = document.createElement("li")
+        let btn = document.createElement("button")
+        btn.className = "release"
+        btn.innerText = "Release"
+        btn.addEventListener("click", () => { removePokemon(obj) })
+        btn.setAttribute("data-pokemon-id", obj.id)
+        li.innerText = `${obj.nickname} (${obj.species})`
+        li.appendChild(btn)
+        ul.appendChild(li)
+    })
+}
+
+function removePokemon(e) {
+    fetch(POKEMONS_URL + `/${e.id}`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        },
+        body: JSON.stringify(e)
+    }).then(resp => {
+        return resp.json()
+    }).then(obj => {
+        debugger
+        console.log(obj)
+    })
 }
