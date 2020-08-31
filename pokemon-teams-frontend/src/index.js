@@ -30,7 +30,7 @@ const renderTrainer = (trainerHash) => {
   //<button data-trainer-id="1">Add Pokemon</button>
   //when I click this button, something needs to happen. a click event listener
 
-  button.addeventListener("click", createPokemon)
+  button.addEventListener("click", createPokemon)
 
   //createPokemon here corresponds to the #create method in the controller
 
@@ -63,10 +63,42 @@ const renderPokemon = (pokemon) => {
 }
 
 
-const createPokemon = () => {
-
+const createPokemon = (e) => {
+  e.preventDefault();
+  //prevent regular behavior, prevent refreshing of the page
+  const configObj = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    body: JSON.stringify({trainer_id: e.target.dataset.trainerId})
+  }
+  fetch(POKEMONS_URL, configObj)
+    .then(res => res.json())
+    .then(json => {
+      if (json.message) {
+        alert(json.message)
+      } else {
+        renderPokemon(json)
+      }
+    })
 }
 
-const deletePokemon = () => {
+const deletePokemon = (e) => {
+  e.preventDefault();
+//remove it from db
+  const configObj = {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    }
+  }
+  fetch(`$(POKEMONS_URL)/${e.target.dataset.pokemonId}`, configObj)
+
+  //remove it from the page
+  e.target.parentElement.remove();
+
 
 }
