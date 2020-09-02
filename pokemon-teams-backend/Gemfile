@@ -50,3 +50,5 @@ gem 'bigdecimal', '>= 2.0.0'
 gem 'multi_json'
 
 gem 'pry'
+gem 'pry-rescue'
+gem 'pry-stack_explorer'
