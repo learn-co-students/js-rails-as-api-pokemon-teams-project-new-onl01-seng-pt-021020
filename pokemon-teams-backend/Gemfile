@@ -47,7 +47,7 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby, :ruby]
 gem 'faker'
 gem 'bigdecimal', '>= 2.0.0'
 
-gem 'multi_json'
+gem 'active_model_serializers'
 
 gem 'pry'
 gem 'pry-rescue'
