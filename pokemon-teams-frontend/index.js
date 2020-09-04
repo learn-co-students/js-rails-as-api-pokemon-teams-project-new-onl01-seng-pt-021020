@@ -42,6 +42,7 @@ function renderTrainerCard(trainer) {
         releaseBtn.className = 'release'
         releaseBtn.setAttribute('data-pokemon-id', pokemon.id)
         releaseBtn.textContent = 'Release'
+        releaseBtn.addEventListener('click', e => {releasePokemon(pokemon.id, e.currentTarget.parentElement)})
         pokeItem.appendChild(releaseBtn)
         pokeList.appendChild(pokeItem)
     })
@@ -96,7 +97,22 @@ div.card[data-id="${json.id}"]`)
         releaseBtn.className = 'release'
         releaseBtn.setAttribute('data-pokemon-id', id)
         releaseBtn.textContent = 'Release'
+        releaseBtn.addEventListener('click', e => {releasePokemon(id, e.currentTarget.parentElement)})
         pokeItem.appendChild(releaseBtn)
         pokeList.appendChild(pokeItem)
     })
+}
+
+function releasePokemon(pokemonId, pokeItem) {
+    fetch(`${POKEMONS_URL}/${pokemonId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    })
+        .then(() => {deletePokemon(pokeItem)})
+}
+
+function deletePokemon(pokeItem) {
+    pokeItem.parentNode.removeChild(pokeItem)
 }
